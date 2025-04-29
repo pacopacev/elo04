@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 def login_view(request):
     error = ""
     if request.method == "POST":
-        username = request.POST.get("username")
+        username1 = request.POST.get("username")
         password = request.POST.get("password")
         if username == "admin" and password == "password":
             return redirect("dashboard")

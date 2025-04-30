@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from decouple import config
+import dj_database_url
+import os
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -40,9 +43,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+     'rest_framework',  # Optional but nice for JSON APIs
     'loginapp',
 ]
-ALLOWED_HOSTS = ['*']
+
+# Allow comma-separated list from environment variable, or default to localhost
+ALLOWED_HOSTS = os.getenv('https://elo04.onrender.com', '127.0.0.1,localhost').split(',')
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -76,10 +82,21 @@ WSGI_APPLICATION = 'elo04.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT', default=25464),
     }
 }
 
@@ -119,6 +136,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

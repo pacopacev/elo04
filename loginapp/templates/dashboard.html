@@ -1,7 +1,24 @@
 <!DOCTYPE html>
 <html>
-<head><title>Dashboard</title></head>
+<head>
+    <title>ESP32 Control Panel</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        button { font-size: 20px; padding: 10px 30px; margin: 10px; }
+        .status { font-size: 24px; margin: 20px; }
+    </style>
+</head>
 <body>
-    <h2>Welcome to the Dashboard!</h2>
+    <h1>ESP32 Control Panel</h1>
+
+    <div class="status">
+        Current Status: <strong>{{ device.status|yesno:"ON,OFF" }}</strong>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="on" style="background-color: green; color: white;">Turn ON</button>
+        <button type="submit" name="off" style="background-color: red; color: white;">Turn OFF</button>
+    </form>
 </body>
 </html>

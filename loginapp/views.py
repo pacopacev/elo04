@@ -18,9 +18,6 @@ def login_view(request):
 
 
 def dashboard(request):
-    print("Request method:", request.method)
-    print("POST data:", request.POST)
-
     device, _ = DeviceControl.objects.get_or_create(device_id=1)
 
     if request.method == 'POST':
@@ -28,16 +25,13 @@ def dashboard(request):
             device.status = True
         elif 'off' in request.POST:
             device.status = False
-        device.last_triggered = timezone.now()  # Log the time when the action happened
+        device.last_triggered = timezone.now()
         device.save()
 
-        # Optionally, show a message after a change
-        success_message = "Device turned ON" if device.status else "Device turned OFF"
-
-        return render(request, 'dashboard.html', {
-            'device': device,
-            'last_triggered': device.last_triggered,
-            'success_message': success_message
+        # Return JSON for AJAX
+        return JsonResponse({
+            'status': device.status,
+            'last_triggered': device.last_triggered.strftime("%Y-%m-%d %H:%M:%S")
         })
 
     return render(request, 'dashboard.html', {
@@ -52,22 +46,27 @@ def device_status(request, device_id):
         device = DeviceControl.objects.get(device_id=device_id)
 
         if request.method == 'GET':
-            # Just return the current status and time
             return JsonResponse({
                 'status': device.status,
                 'last_triggered': device.last_triggered.strftime("%Y-%m-%d %H:%M:%S") if device.last_triggered else None
             })
 
         elif request.method == 'POST':
-            # Handle updates (on/off actions here)
+            # Read the action from POST body (e.g., "on" or "off")
             if 'on' in request.POST:
                 device.status = True
             elif 'off' in request.POST:
                 device.status = False
+            else:
+                return JsonResponse({'error': 'Invalid command'}, status=400)
 
-            device.last_triggered = timezone.now()  # Log the action time
+            device.last_triggered = timezone.now()
             device.save()
-            return JsonResponse({'message': 'Status updated', 'status': device.status})
+
+            return JsonResponse({
+                'message': 'Status updated',
+                'status': device.status
+            })
 
     except DeviceControl.DoesNotExist:
         return JsonResponse({'error': 'Device not found'}, status=404)

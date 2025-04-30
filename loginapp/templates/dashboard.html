@@ -9,17 +9,50 @@
     </style>
 </head>
 <body>
-    <h1>ESP32 Control Panel</h1>
+<h1>ESP32 Control Panel</h1>
 
-    <div class="status">
-        Current Status: <strong>{{ device.status|yesno:"ON,OFF" }}</strong>
-        <p>Last triggered: {{ last_triggered }}</p>
-    </div>
+<div class="status">
+    Current Status: <strong>{{ device.status|yesno:"ON,OFF" }}</strong>
+    <p>Last triggered: {{ last_triggered }}</p>
+</div>
 
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" name="on" style="background-color: green; color: white;">Turn ON</button>
-        <button type="submit" name="off" style="background-color: red; color: white;">Turn OFF</button>
-    </form>
+<div>
+    <button id="turn-on" style="background-color: green; color: white;">Turn ON</button>
+    <button id="turn-off" style="background-color: red; color: white;">Turn OFF</button>
+    <p id="status-message" style="margin-top: 20px;"></p>
+</div>
+
+<script>
+  const deviceUrl = "/device/status/1/";
+  const csrftoken = "{{ csrf_token }}";
+
+  document.getElementById("turn-on").addEventListener("click", function () {
+    sendAction("on");
+  });
+
+  document.getElementById("turn-off").addEventListener("click", function () {
+    sendAction("off");
+  });
+
+  function sendAction(action) {
+    fetch(deviceUrl, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": csrftoken,
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: new URLSearchParams({ [action]: "1" })
+    })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("status-message").innerText =
+          data.status === true ? "Device turned ON" : "Device turned OFF";
+      })
+      .catch(error => {
+        document.getElementById("status-message").innerText = "Error sending request";
+        console.error("Error:", error);
+      });
+  }
+</script>
 </body>
 </html>

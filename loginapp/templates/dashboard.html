@@ -9,11 +9,17 @@
     </style>
 </head>
 <body>
-<h1>ESP32 Control Panel</h1>
+<h1>ESP32 Water Tower Control Panel</h1>
 
 <div class="status">
-    Current Status: <strong>{{ device.status|yesno:"ON,OFF" }}</strong>
-    <p>Last triggered: {{ last_triggered }}</p>
+    <strong id="current_status">Current Status: {{ device.status|yesno:"ON,OFF" }}</strong>
+    <p id="trigger_status">
+        {% if device.last_triggered %}
+            Last Triggered: {{ device.last_triggered }}
+        {% else %}
+            Last Triggered: N/A
+        {% endif %}
+    </p>
 </div>
 
 <div>
@@ -45,8 +51,18 @@
     })
       .then(response => response.json())
       .then(data => {
+        // ✅ Display response
         document.getElementById("status-message").innerText =
           data.status === true ? "Device turned ON" : "Device turned OFF";
+
+        // ✅ Update status info
+        document.getElementById("current_status").innerText =
+          "Current Status: " + (data.status ? "ON" : "OFF");
+
+        document.getElementById("trigger_status").innerText =
+          data.last_triggered
+            ? `Last Triggered: ${data.last_triggered}`
+            : "Last Triggered: N/A";
       })
       .catch(error => {
         document.getElementById("status-message").innerText = "Error sending request";

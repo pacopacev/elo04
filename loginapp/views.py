@@ -65,7 +65,9 @@ def device_status(request, device_id):
 
             return JsonResponse({
                 'message': 'Status updated',
-                'status': device.status
+                'status': device.status,
+                'last_triggered': device.last_triggered.strftime("%Y-%m-%d %H:%M:%S") if device.last_triggered else None
+
             })
 
         return render(request, 'dashboard.html', {

@@ -13,6 +13,7 @@
 
     <div class="status">
         Current Status: <strong>{{ device.status|yesno:"ON,OFF" }}</strong>
+        <p>Last triggered: {{ last_triggered }}</p>
     </div>
 
     <form method="post">

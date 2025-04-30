@@ -4,5 +4,5 @@ from . import views
 urlpatterns = [
     path('', views.login_view, name='login'),
     path('dashboard/', views.dashboard, name='dashboard'),
-    #path('status/<int:device_id>/', views.device_status, name='device_status'),
+    path('device/status/<int:device_id>/', views.device_status, name='device_status'),  # This matches the device status route
 ]

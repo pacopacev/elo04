@@ -28,12 +28,23 @@ def dashboard(request):
             device.status = True
         elif 'off' in request.POST:
             device.status = False
+        device.last_triggered = timezone.now()  # Log the time when the action happened
         device.save()
+
+        # Optionally, show a message after a change
+        success_message = "Device turned ON" if device.status else "Device turned OFF"
+
+        return render(request, 'dashboard.html', {
+            'device': device,
+            'last_triggered': device.last_triggered,
+            'success_message': success_message
+        })
 
     return render(request, 'dashboard.html', {
         'device': device,
         'last_triggered': device.last_triggered
     })
+
 
 @csrf_exempt
 def device_status(request, device_id):
@@ -41,16 +52,22 @@ def device_status(request, device_id):
         device = DeviceControl.objects.get(device_id=device_id)
 
         if request.method == 'GET':
+            # Just return the current status and time
             return JsonResponse({
                 'status': device.status,
                 'last_triggered': device.last_triggered.strftime("%Y-%m-%d %H:%M:%S") if device.last_triggered else None
             })
 
         elif request.method == 'POST':
-            device.status = False
-            device.last_triggered = timezone.now()  # ✅ use Django's timezone
+            # Handle updates (on/off actions here)
+            if 'on' in request.POST:
+                device.status = True
+            elif 'off' in request.POST:
+                device.status = False
+
+            device.last_triggered = timezone.now()  # Log the action time
             device.save()
-            return JsonResponse({'message': 'Status reset and logged'})
+            return JsonResponse({'message': 'Status updated', 'status': device.status})
 
     except DeviceControl.DoesNotExist:
         return JsonResponse({'error': 'Device not found'}, status=404)

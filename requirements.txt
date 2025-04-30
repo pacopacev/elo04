@@ -4,3 +4,4 @@ python-dotenv
 psycopg-binary
 python-decouple
 djangorestframework
+psycopg2-binary

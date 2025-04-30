@@ -68,5 +68,10 @@ def device_status(request, device_id):
                 'status': device.status
             })
 
+        return render(request, 'dashboard.html', {
+            'device': device,
+            'last_triggered': device.last_triggered
+        })
+
     except DeviceControl.DoesNotExist:
         return JsonResponse({'error': 'Device not found'}, status=404)

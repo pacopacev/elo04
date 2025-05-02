@@ -30,11 +30,13 @@ def dashboard(request):
 
         # Return JSON for AJAX
         return JsonResponse({
+            'message': 'Status updated',
             'status': device.status,
             'last_triggered': device.last_triggered.strftime("%Y-%m-%d %H:%M:%S")
         })
 
     return render(request, 'dashboard.html', {
+        'message': 'Status updated',
         'device': device,
         'last_triggered': device.last_triggered
     })
@@ -47,6 +49,7 @@ def device_status(request, device_id):
 
         if request.method == 'GET':
             return JsonResponse({
+                'message': 'Status updated',
                 'status': device.status,
                 'last_triggered': device.last_triggered.strftime("%Y-%m-%d %H:%M:%S") if device.last_triggered else None
             })
@@ -71,6 +74,7 @@ def device_status(request, device_id):
             })
 
         return render(request, 'dashboard.html', {
+            'message': 'Status updated',
             'device': device,
             'last_triggered': device.last_triggered
         })

@@ -1,23 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Essential for responsiveness -->
     <title>ESP32 Control Panel</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
         button { font-size: 20px; padding: 10px 30px; margin: 10px; }
         .status { font-size: 24px; margin: 20px; }
+.grid-container {
+      display: flex;
+       gap: 20px; /* Add space between the columns */
+
+    }
+    .grid-item {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #000;
+      background-color: #f9f9f9;
+
+    }
     </style>
 </head>
 <body>
 <h1>ESP32 Water Tower Control Panel</h1>
 
+
 <div class="status">
-    <strong id="current_status">Current Status: {{ device.status|yesno:"ON,OFF" }}</strong>
-    <p id="trigger_status">
+    <strong id="current-status">Current Status: {{ device.status|yesno:"ON,OFF" }}</strong>
+    <p id="trigger-status">
         {% if device.last_triggered %}
-            Last Triggered: {{ device.last_triggered }}
+        Last Triggered: {{ device.last_triggered }}
         {% else %}
-            Last Triggered: N/A
+        Last Triggered: N/A
         {% endif %}
     </p>
 </div>
@@ -28,47 +43,185 @@
     <p id="status-message" style="margin-top: 20px;"></p>
 </div>
 
+
+
+
+
+<hr>
+<hr>
+
+
+
+    <!--Separate-->
+
+
+    <h1>ESP32 Separate Water Tower Control Panel</h1>
+
+    <div class="grid-container">
+        <div class="grid-item">
+            <div class="status">
+                <strong id="current_status-pump">Current Status: {{ device.status|yesno:"ON,OFF" }}</strong>
+                <p id="trigger-status-pump">
+                    {% if device.last_triggered %}
+                    Last Triggered: {{ device.last_triggered }}
+                    {% else %}
+                    Last Triggered: N/A
+                    {% endif %}
+                </p>
+            </div>
+
+            <button id="turn-on-pump" style="background-color: green; color: white;">Turn ON Pump</button>
+            <button id="turn-off-pump" style="background-color: red; color: white;">Turn OFF Pump</button>
+            <p id="status-message-single-use-pump" style="margin-top: 20px;"></p>
+        </div>
+
+
+        <div class="grid-item">
+            <div class="status">
+                <strong id="current_status-fan">Current Status: {{ device.status|yesno:"ON,OFF" }}</strong>
+                <p id="trigger-status-fan">
+                    {% if device.last_triggered %}
+                    Last Triggered: {{ device.last_triggered }}
+                    {% else %}
+                    Last Triggered: N/A
+                    {% endif %}
+                </p>
+            </div>
+            <button id="turn-on-fan" style="background-color: green; color: white;">Turn ON Fan</button>
+            <button id="turn-off-fan" style="background-color: red; color: white;">Turn OFF Fan</button>
+            <p id="status-message-single-use-fan" style="margin-top: 20px;"></p></div>
+
+
+    </div>
+
+
+</div>
+<!--script for together use-->
 <script>
-  const deviceUrl = "/device/status/1/";
-  const csrftoken = "{{ csrf_token }}";
+    const deviceUrl = "/device/status/1/";
+    const csrftoken = "{{ csrf_token }}";
 
-  document.getElementById("turn-on").addEventListener("click", function () {
-    sendAction("on");
-  });
+    document.getElementById("turn-on").addEventListener("click", function () {
+      sendAction("on");
+    });
 
-  document.getElementById("turn-off").addEventListener("click", function () {
-    sendAction("off");
-  });
+    document.getElementById("turn-off").addEventListener("click", function () {
+      sendAction("off");
+    });
 
-  function sendAction(action) {
-    fetch(deviceUrl, {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": csrftoken,
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: new URLSearchParams({ [action]: "1" })
-    })
-      .then(response => response.json())
-      .then(data => {
-        // ✅ Display response
-        document.getElementById("status-message").innerText =
-          data.status === true ? "Device turned ON" : "Device turned OFF";
-
-        // ✅ Update status info
-        document.getElementById("current_status").innerText =
-          "Current Status: " + (data.status ? "ON" : "OFF");
-
-        document.getElementById("trigger_status").innerText =
-          data.last_triggered
-            ? `Last Triggered: ${data.last_triggered}`
-            : "Last Triggered: N/A";
+    function sendAction(action) {
+      fetch(deviceUrl, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ [action]: "1" })
       })
-      .catch(error => {
-        document.getElementById("status-message").innerText = "Error sending request";
-        console.error("Error:", error);
-      });
-  }
+        .then(response => response.json())
+        .then(data => {
+          // ✅ Display response
+          document.getElementById("status-message").innerText =
+            data.status === true ? "Device turned ON" : "Device turned OFF";
+
+          // ✅ Update status info
+          document.getElementById("current-status").innerText =
+            "Current Status: " + (data.status ? "ON" : "OFF");
+
+          document.getElementById("trigger-status").innerText =
+            data.last_triggered
+              ? `Last Triggered: ${data.last_triggered}`
+              : "Last Triggered: N/A";
+        })
+        .catch(error => {
+          document.getElementById("status-message").innerText = "Error sending request";
+          console.error("Error:", error);
+        });
+    }
+
+<!--script for single use pump-->
+    const deviceUrl_pump = "/device/status/2/";
+
+
+    document.getElementById("turn-on-pump").addEventListener("click", function () {
+      sendActionPump("on");
+    });
+
+    document.getElementById("turn-off-pump").addEventListener("click", function () {
+      sendActionPump("off");
+    });
+
+    function sendActionPump(action) {
+      fetch(deviceUrl_pump, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ [action]: "2" })
+      })
+        .then(response => response.json())
+        .then(data => {
+          // ✅ Display response
+          document.getElementById("status-message-single-use-pump").innerText =
+            data.status === true ? "Device turned ON" : "Device turned OFF";
+
+          // ✅ Update status info
+          document.getElementById("current_status-pump").innerText =
+            "Current Status: " + (data.status ? "ON" : "OFF");
+
+          document.getElementById("trigger-status-pump").innerText =
+            data.last_triggered
+              ? `Last Triggered: ${data.last_triggered}`
+              : "Last Triggered: N/A";
+        })
+        .catch(error => {
+          document.getElementById("status-message").innerText = "Error sending request";
+          console.error("Error:", error);
+        });
+    }
+
+    <!--script for single use fan-->
+    const deviceUrl_fan = "/device/status/3/";
+
+
+    document.getElementById("turn-on-fan").addEventListener("click", function () {
+      sendActionPump("on");
+    });
+
+    document.getElementById("turn-off-fan").addEventListener("click", function () {
+      sendActionPump("off");
+    });
+
+    function sendActionPump(action) {
+      fetch(deviceUrl_fan, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ [action]: "3" })
+      })
+        .then(response => response.json())
+        .then(data => {
+          // ✅ Display response
+          document.getElementById("status-message-single-use-fan").innerText =
+            data.status === true ? "Device turned ON" : "Device turned OFF";
+
+          // ✅ Update status info
+          document.getElementById("current_status-fan").innerText =
+            "Current Status: " + (data.status ? "ON" : "OFF");
+
+          document.getElementById("trigger-status-fan").innerText =
+            data.last_triggered
+              ? `Last Triggered: ${data.last_triggered}`
+              : "Last Triggered: N/A";
+        })
+        .catch(error => {
+          document.getElementById("status-message").innerText = "Error sending request";
+          console.error("Error:", error);
+        });
+    }
 </script>
 </body>
 </html>

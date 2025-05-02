@@ -1,0 +1,178 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+
+// ========== CONFIG ==========
+const char* ssid = "ELOPARWFNT";
+const char* password = "24680135790!!**";
+
+const char* url1 = "https://elo04.onrender.com/device/status/1/";
+const char* url2 = "https://elo04.onrender.com/device/status/2/";
+const char* url3 = "https://elo04.onrender.com/device/status/3/";
+
+const int led1Pin = 17;  // Pump
+const int led2Pin = 19;  // Fan
+
+// Independent previous status tracking
+bool previousStatus1 = false;
+bool previousStatus2 = false;
+bool previousStatus3 = false;
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  pinMode(led1Pin, OUTPUT);
+  pinMode(led2Pin, OUTPUT);
+  digitalWrite(led1Pin, LOW);
+  digitalWrite(led2Pin, LOW);
+
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi...");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nConnected!");
+  Serial.print("Local IP: ");
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  if (WiFi.status() == WL_CONNECTED) {
+    // --- Handle URL 1 ---
+    String payload1 = getStatus(url1);
+    if (!payload1.isEmpty()) {
+      previousStatus1 = togetherPumpFan(payload1, previousStatus1);
+    }
+
+    delay(500);
+
+    // --- Handle URL 2 ---
+    String payload2 = getStatus(url2);
+    if (!payload2.isEmpty()) {
+      previousStatus2 = onlyPump(payload2, previousStatus2);
+    }
+
+    delay(500);
+
+    // --- Handle URL 3 ---
+    String payload3 = getStatus(url3);
+    if (!payload3.isEmpty()) {
+      previousStatus3 = onlyFan(payload3, previousStatus3);
+    }
+
+  } else {
+    Serial.println("WiFi Disconnected!");
+  }
+
+  delay(5000);  // wait before repeating
+}
+
+// Function to handle GET requests and return the payload as a string
+String getStatus(const char* url) {
+  HTTPClient httpGet;
+  httpGet.begin(url);
+  int httpCode = httpGet.GET();
+  String payload = "";
+
+  if (httpCode == 200) {
+    payload = httpGet.getString();
+    Serial.println("Received from URL: " + payload);
+  } else {
+    Serial.println("Failed to GET URL: " + String(httpCode));
+  }
+
+  httpGet.end();
+  return payload;
+}
+
+// Pump only
+bool onlyPump(const String& payload, bool prevStatus) {
+  Serial.println("inPump");
+  StaticJsonDocument<200> doc;
+  DeserializationError error = deserializeJson(doc, payload);
+  if (error) {
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.c_str());
+    return prevStatus;
+  }
+
+  bool status = doc["status"];
+  if (status != prevStatus) {
+    if (status) {
+      controlLED(led1Pin, true);
+      resetDeviceStatus(url2);
+    } else {
+      controlLED(led1Pin, false);
+    }
+  }
+
+  return status;
+}
+
+// Fan only
+bool onlyFan(const String& payload, bool prevStatus) {
+  Serial.println("inFan");
+  StaticJsonDocument<200> doc;
+  DeserializationError error = deserializeJson(doc, payload);
+  if (error) {
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.c_str());
+    return prevStatus;
+  }
+
+  bool status = doc["status"];
+  if (status != prevStatus) {
+    if (status) {
+      controlLED(led2Pin, true);
+      resetDeviceStatus(url3);
+    } else {
+      controlLED(led2Pin, false);
+    }
+  }
+
+  return status;
+}
+
+// Pump + Fan
+bool togetherPumpFan(const String& payload, bool prevStatus) {
+  Serial.println("inTogetherPumpFan");
+  StaticJsonDocument<200> doc;
+  DeserializationError error = deserializeJson(doc, payload);
+  if (error) {
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.c_str());
+    return prevStatus;
+  }
+
+  bool status = doc["status"];
+  if (status != prevStatus) {
+    if (status) {
+      controlLED(led1Pin, true);
+      controlLED(led2Pin, true);
+      resetDeviceStatus(url1);
+    } else {
+      controlLED(led1Pin, false);
+      controlLED(led2Pin, false);
+    }
+  }
+
+  return status;
+}
+
+// Helper function to control an LED
+void controlLED(int ledPin, bool state) {
+  digitalWrite(ledPin, state ? HIGH : LOW);
+  Serial.println((state ? "Turning ON " : "Turning OFF ") + String("LED ") + ledPin);
+}
+
+// Function to reset the device status (POST request)
+void resetDeviceStatus(const char* url) {
+  HTTPClient httpPost;
+  httpPost.begin(url);
+  httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  int postCode = httpPost.POST("");
+  Serial.println("Status reset POST: " + String(postCode));
+  httpPost.end();
+}

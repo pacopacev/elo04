@@ -50,7 +50,7 @@ def device_status(request, device_id):
         if request.method == 'GET':
             print(device_id)
             return JsonResponse({
-                'device_id': device_id,
+                'device_id': device.device_id,
                 'message': 'Status updated',
                 'status': device.status,
                 'last_triggered': device.last_triggered.strftime("%Y-%m-%d %H:%M:%S") if device.last_triggered else None
@@ -69,7 +69,7 @@ def device_status(request, device_id):
             device.save()
 
             return JsonResponse({
-                'device_id': device_id,
+                'device_id': device.device_id,
                 'message': 'Status updated',
                 'status': device.status,
                 'last_triggered': device.last_triggered.strftime("%Y-%m-%d %H:%M:%S") if device.last_triggered else None
@@ -77,7 +77,7 @@ def device_status(request, device_id):
             })
 
         return render(request, 'dashboard.html', {
-            'device_id': device_id,
+            'device_id': device.device_id,
             'message': 'Status updated',
             'device': device,
             'last_triggered': device.last_triggered

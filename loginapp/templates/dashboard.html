@@ -186,14 +186,14 @@
 
 
     document.getElementById("turn-on-fan").addEventListener("click", function () {
-      sendActionPump("on");
+      sendActionFan("on");
     });
 
     document.getElementById("turn-off-fan").addEventListener("click", function () {
-      sendActionPump("off");
+      sendActionFan("off");
     });
 
-    function sendActionPump(action) {
+    function sendActionFan(action) {
       fetch(deviceUrl_fan, {
         method: "POST",
         headers: {

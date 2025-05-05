@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
      'rest_framework',  # Optional but nice for JSON APIs
      'loginapp',
-    'controller_esp32'
+
 ]
 
 # Allow comma-separated list from environment variable, or default to localhost

@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head><title>ESP32 LED Control</title></head>
+<body>
+  <h1>LED Control</h1>
+  <form method="post">{% csrf_token %}
+    <button name="command" value="ON">Turn ON</button>
+    <button name="command" value="OFF">Turn OFF</button>
+  </form>
+</body>
+</html>

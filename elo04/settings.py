@@ -43,11 +43,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
      'rest_framework',  # Optional but nice for JSON APIs
      'loginapp',
+    'controller_esp32'
 ]
 
 # Allow comma-separated list from environment variable, or default to localhost
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,esp32nodeserver.onrender.com').split(',')
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
